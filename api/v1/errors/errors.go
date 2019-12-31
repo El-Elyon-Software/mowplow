@@ -3,6 +3,7 @@ package errors
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/render"
 )
@@ -30,10 +31,27 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func HandleError(w http.ResponseWriter, r *http.Request, code int, status string, err error) {
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
 		// Implement real logging
 		log.Println(err)
+
+		code := 422
+		status := "Unprocessable Entity"
+
+		if strings.Index(err.Error(), "invalid") > -1 ||
+			strings.Index(err.Error(), "unexpected") > -1 ||
+			strings.Index(err.Error(), "EOF") > -1 || 
+			strings.Index(err.Error(), "json") > -1 {
+				code = 400
+				status = "Bad Request"
+		}
+
+		if strings.Index(err.Error(), "Error") > -1 {
+			code = 500
+			status = "Internal Server Error"
+		}
+
 		render.Render(w, r, errorResponse(code, status, err))
 	}
 }
