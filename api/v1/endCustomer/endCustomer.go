@@ -1,8 +1,11 @@
 package endCustomer
 
 import (
+	"fmt"
 	"net/http"
+	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/render"
@@ -26,25 +29,25 @@ func Routes() *chi.Mux {
 
 	router := chi.NewRouter()
 	router.Post("/", ec.Create)
-	router.Get("/{endCustomerID}", ec.Retrieve)
+	router.Get("/{ID}", ec.Retrieve)
 	router.Put("/", ec.Update)
 	router.Delete("/", ec.Delete)
 	return router
 }
 
 type EndCustomer struct {
-	EndCustomerID int64  `json:"id"`
-	FirstName     string `json:"firstName"`
-	LastName      string `json:"lastName"`
-	BusinessName  string `json:"businessName"`
-	Address1      string `json:"address1"`
-	Address2      string `json:"address2"`
-	PostalCode    string `json:"postalCode"`
-	Email         string `json:"email"`
-	Mobile        string `json:"mobile"`
-	DateAdded     string `json:"dateAdded"`
-	DateModified  string `json:"dateModified"`
-	dal           dal.DB
+	ID           int64  `json:"id"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	BusinessName string `json:"businessName"`
+	Address1     string `json:"address1"`
+	Address2     string `json:"address2"`
+	PostalCode   string `json:"postalCode"`
+	Email        string `json:"email"`
+	Mobile       string `json:"mobile"`
+	DateAdded    string `json:"dateAdded"`
+	DateModified string `json:"dateModified"`
+	dal          dal.DB
 }
 
 func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
@@ -79,14 +82,14 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if id > 0 {
-		ec.EndCustomerID = id
+		ec.ID = id
 	}
 	render.JSON(rw, r, ec)
 
 }
 
 func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "endCustomerID"), 10, 64)
+	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, 400, "Bad Request", err)
 		return
@@ -116,8 +119,8 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 			WHERE 
 				end_customer_id=?`
 	err = ec.dal.DB.QueryRow(stmt, id).Scan(
-		&ec.EndCustomerID, &ec.FirstName, &ec.LastName, &ec.BusinessName, 
-		&ec.Address1, &ec.Address2, &ec.PostalCode, &ec.Email, &ec.Mobile, 
+		&ec.ID, &ec.FirstName, &ec.LastName, &ec.BusinessName,
+		&ec.Address1, &ec.Address2, &ec.PostalCode, &ec.Email, &ec.Mobile,
 		&ec.DateAdded, &ec.DateModified)
 
 	if err != nil {
@@ -131,30 +134,30 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 func (ec *EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 	ecs := []*EndCustomer{
 		{
-			EndCustomerID: 1,
-			FirstName:     "BDP",
-			LastName:      "In Da Place To Be",
-			BusinessName:  "ROC City Coders",
-			Address1:      "123 Roc City Blvd",
-			Address2:      "Not your mom's place",
-			PostalCode:    "12345-67",
-			Email:         "bdp@indaplacetobe.com",
-			Mobile:        "5855551212",
-			DateAdded:     "01-01-2001",
-			DateModified:  "12-01-2019",
+			ID:           1,
+			FirstName:    "BDP",
+			LastName:     "In Da Place To Be",
+			BusinessName: "ROC City Coders",
+			Address1:     "123 Roc City Blvd",
+			Address2:     "Not your mom's place",
+			PostalCode:   "12345-67",
+			Email:        "bdp@indaplacetobe.com",
+			Mobile:       "5855551212",
+			DateAdded:    "01-01-2001",
+			DateModified: "12-01-2019",
 		},
 		{
-			EndCustomerID: 2,
-			FirstName:     "SDP",
-			LastName:      "In Da Place To Be",
-			BusinessName:  "ROC City Coders",
-			Address1:      "321 Roc City Blvd",
-			Address2:      "Not your dad's place",
-			PostalCode:    "12345-67",
-			Email:         "sdp@indaplacetobe.com",
-			Mobile:        "5855551212",
-			DateAdded:     "01-01-2001",
-			DateModified:  "12-01-2019",
+			ID:           2,
+			FirstName:    "SDP",
+			LastName:     "In Da Place To Be",
+			BusinessName: "ROC City Coders",
+			Address1:     "321 Roc City Blvd",
+			Address2:     "Not your dad's place",
+			PostalCode:   "12345-67",
+			Email:        "sdp@indaplacetobe.com",
+			Mobile:       "5855551212",
+			DateAdded:    "01-01-2001",
+			DateModified: "12-01-2019",
 		},
 	}
 	render.JSON(rw, r, ecs)
@@ -162,14 +165,56 @@ func (ec *EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 
 func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 	ec.bindData(rw, r)
+
+	err := ec.dal.OpenDB()
+	if err != nil {
+		e.HandleError(rw, r, 500, "Internal Server Error", err)
+		return
+	}
+
+	defer ec.dal.DB.Close()
+
+	stmt := `UPDATE end_customer SET
+				first_name=?,
+				last_name=?, 
+				business_name=?, 
+				address_1=?, 
+				address_2=?, 
+				postal_code=?, 
+				email=?, 
+				mobile=?
+			WHERE
+				end_customer_id=?`
+
+	res, err := ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
+		ec.Address1, ec.Address2, ec.PostalCode, ec.Email, ec.Mobile,
+		ec.ID)
+
+	if err != nil {
+		e.HandleError(rw, r, 422, "Unprocessable Entity", err)
+		return
+	}
+
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		e.HandleError(rw, r, 500, "Internal Server Error", err)
+		return
+	}
+
+	if rowCount == 0 {
+		e.HandleError(rw, r, 200, "No Records Updated", err)
+		return
+	}
+
+	render.JSON(rw, r, ec)
+
 }
 
 func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
-	ec.bindData(rw, r)
+
 }
 
 func (ec *EndCustomer) DeleteFilter(rw http.ResponseWriter, r *http.Request) {
-	ec.bindData(rw, r)
 
 }
 
@@ -197,6 +242,18 @@ func (ec *EndCustomer) Bind(r *http.Request) error {
 	}
 	if ec.Mobile == "" { //add regex check
 		return errors.New("mobile is required.")
+	}
+
+	// Applicable for Update
+	// This assumes the number of calls is static. 
+	// It will probably need to change.
+	pc, _, _, _ := runtime.Caller(4) 
+	details := runtime.FuncForPC(pc)
+	fmt.Println(details.Name())
+	if strings.Index(details.Name(), ".Update") > -1 {
+		if ec.ID == 0 {
+			return errors.New("ID is required.")
+		}
 	}
 
 	return nil
