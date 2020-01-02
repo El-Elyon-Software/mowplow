@@ -1,6 +1,7 @@
 package endCustomer
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -30,8 +31,9 @@ func Routes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Post("/", ec.Create)
 	router.Get("/{ID}", ec.Retrieve)
+	router.Get("/", ec.RetrieveFilter)
 	router.Put("/{ID}", ec.Update)
-	router.Delete("/", ec.Delete)
+	router.Delete("/{ID}", ec.Delete)
 	return router
 }
 
@@ -48,6 +50,11 @@ type EndCustomer struct {
 	DateAdded    string `json:"dateAdded"`
 	DateModified string `json:"dateModified"`
 	dal          dal.DB
+}
+
+type GeneralResponse struct {
+	MSG string `json:"msg"`
+	ID  int64  `json:"id"`
 }
 
 func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
@@ -119,7 +126,8 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 			FROM 
 				end_customer 
 			WHERE 
-				end_customer_id=?`
+				end_customer_id=?
+				AND date_delete IS NULL`
 
 	err = ec.dal.DB.QueryRow(stmt, id).Scan(
 		&ec.ID, &ec.FirstName, &ec.LastName, &ec.BusinessName,
@@ -135,6 +143,15 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (ec *EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
+	wc, vals := dal.ParseQueryStringParams(r.URL.Query())
+	
+	for i, element := range wc {
+		fmt.Println(element)
+		fmt.Println(vals[i])
+	}
+
+	stmt := wc
+
 	ecs := []*EndCustomer{
 		{
 			ID:           1,
@@ -212,7 +229,37 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
+	if err != nil {
+		e.HandleError(rw, r, err)
+		return
+	}
 
+	err = ec.dal.OpenDB()
+	if err != nil {
+		e.HandleError(rw, r, err)
+		return
+	}
+
+	defer ec.dal.DB.Close()
+
+	stmt := `UPDATE end_customer SET
+				date_deleted=NOW()
+			WHERE
+				end_customer_id=?`
+
+	_, err = ec.dal.DB.Exec(stmt, id)
+
+	if err != nil {
+		e.HandleError(rw, r, err)
+		return
+	}
+
+	gr := &GeneralResponse{
+		MSG: "The end customer was deleted",
+		ID:  id,
+	}
+	render.JSON(rw, r, gr)
 }
 
 func (ec *EndCustomer) DeleteFilter(rw http.ResponseWriter, r *http.Request) {
