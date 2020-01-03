@@ -1,7 +1,6 @@
 package endCustomer
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -152,7 +151,7 @@ func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 			FROM 
 				end_customer 
 			WHERE ` + strings.Join(wc, "")
-	fmt.Println(stmt)
+
 	err := ec.dal.OpenDB()
 	if err != nil {
 		e.HandleError(rw, r, err)
