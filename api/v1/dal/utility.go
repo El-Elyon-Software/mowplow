@@ -4,9 +4,9 @@ import (
 	"strings"
 )
 
-func ParseQueryStringParams(params map[string][]string) ([]string, []string) {
+func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}) {
 	var wc []string
-	var vals []string
+	var vals []interface{}
 	c := 0
 
 	for key, element := range params {
@@ -29,6 +29,7 @@ func ParseQueryStringParams(params map[string][]string) ([]string, []string) {
 			v_op = translateOperator(v_op)
 		}
 
+		k = translateFieldName(k)
 		wc = append(wc, k_op+k+v_op+"?")
 		vals = append(vals, v)
 		c++
@@ -47,18 +48,48 @@ func translateOperator(op string) string {
 		return "OR"
 	case "ne":
 		return "<>"
-	case "eq":
-		return "="
 	case "lte":
 		return "<="
 	case "gte":
 		return ">="
-	case "btw":
-		return "BETWEEN"
 	case "lk":
-		return "LIKE"
-	case "n":
-		return "IN"
+		return " LIKE "
+	}
+	return ""
+}
+
+func translateFieldName(fn string) string {
+	switch n := fn; strings.ToLower(n) {
+	case "fn":
+		return "first_name"
+	case "ln":
+		return "last_name"
+	case "bn":
+		return "business_name"
+	case "a1":
+		return "address_1"
+	case "a2":
+		return "address_2"
+	case "pc":
+		return "postal_code"
+	case "em":
+		return "email"
+	case "mp":
+		return "mobile"
+	case "da":
+		return "date_added"
+	case "dm":
+		return "date_modified"
+	case "ct":
+		return "city"
+	case "st":
+		return "state"
+	case "cn":
+		return "country"
+	case "sn":
+		return "service_name"
+	case "sd":
+		return "service.description"
 	}
 	return ""
 }

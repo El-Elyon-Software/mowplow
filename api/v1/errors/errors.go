@@ -41,7 +41,7 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 
 		if strings.Index(err.Error(), "invalid") > -1 ||
 			strings.Index(err.Error(), "unexpected") > -1 ||
-			strings.Index(err.Error(), "EOF") > -1 || 
+			strings.Index(err.Error(), "EOF") > -1 ||
 			strings.Index(err.Error(), "json") > -1 {
 				code = 400
 				status = "Bad Request"

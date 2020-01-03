@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/render"
@@ -142,44 +143,43 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, ec)
 }
 
-func (ec *EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
+func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.Query())
-	
-	for i, element := range wc {
-		fmt.Println(element)
-		fmt.Println(vals[i])
+
+	stmt := `SELECT end_customer_id,first_name,last_name,business_name
+				,address_1,address_2,postal_code,email,mobile,date_added
+				,date_modified
+			FROM 
+				end_customer 
+			WHERE ` + strings.Join(wc, "")
+	fmt.Println(stmt)
+	err := ec.dal.OpenDB()
+	if err != nil {
+		e.HandleError(rw, r, err)
+		return
+	}
+	defer ec.dal.DB.Close()
+
+	rows, err := ec.dal.DB.Query(stmt, vals...)
+	if err != nil {
+		e.HandleError(rw, r, err)
+		return
+	}
+	defer rows.Close()
+
+	var ecs []*EndCustomer
+	for rows.Next() {
+		var singel_ec EndCustomer
+		rows.Scan(
+			&singel_ec.ID, &singel_ec.FirstName, &singel_ec.LastName,
+			&singel_ec.BusinessName,
+			&singel_ec.Address1, &singel_ec.Address2, &singel_ec.PostalCode,
+			&singel_ec.Email, &singel_ec.Mobile,
+			&singel_ec.DateAdded, &singel_ec.DateModified)
+
+		ecs = append(ecs, &singel_ec)
 	}
 
-	stmt := wc
-
-	ecs := []*EndCustomer{
-		{
-			ID:           1,
-			FirstName:    "BDP",
-			LastName:     "In Da Place To Be",
-			BusinessName: "ROC City Coders",
-			Address1:     "123 Roc City Blvd",
-			Address2:     "Not your mom's place",
-			PostalCode:   "12345-67",
-			Email:        "bdp@indaplacetobe.com",
-			Mobile:       "5855551212",
-			DateAdded:    "01-01-2001",
-			DateModified: "12-01-2019",
-		},
-		{
-			ID:           2,
-			FirstName:    "SDP",
-			LastName:     "In Da Place To Be",
-			BusinessName: "ROC City Coders",
-			Address1:     "321 Roc City Blvd",
-			Address2:     "Not your dad's place",
-			PostalCode:   "12345-67",
-			Email:        "sdp@indaplacetobe.com",
-			Mobile:       "5855551212",
-			DateAdded:    "01-01-2001",
-			DateModified: "12-01-2019",
-		},
-	}
 	render.JSON(rw, r, ecs)
 }
 
