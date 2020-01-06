@@ -23,6 +23,13 @@ type CRUD interface {
 	DeleteFilter()
 }
 
+func (d *DB) NewDAL() {
+	d.DBType = "mysql"
+	d.DBName = "mowplow"
+	d.DBUser = "mowplow"
+	d.DBPassword = ""
+}
+
 func (d *DB) OpenDB() error {
 	db, err := sql.Open(d.DBType, d.DBUser+":"+d.DBPassword+"@/"+d.DBName)
 	d.DB = db

@@ -20,12 +20,7 @@ func Routes() *chi.Mux {
 	// of these objects in here for now. There is probably a better
 	// way to do this but I don't know what that is at this point.
 
-	dal := dal.DB{
-		DBType:     "mysql",
-		DBName:     "mowplow",
-		DBUser:     "root",
-		DBPassword: "saunya18!!",
-	}
+	dal := dal.NewDAL()
 	ec := EndCustomer{dal: dal}
 
 	router := chi.NewRouter()
@@ -203,14 +198,8 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 	defer ec.dal.DB.Close()
 
 	stmt := `UPDATE end_customer SET
-				first_name=?,
-				last_name=?, 
-				business_name=?, 
-				address_1=?, 
-				address_2=?, 
-				postal_code=?, 
-				email=?, 
-				mobile=?,
+				first_name=?,last_name=?,business_name=?, address_1=?, 
+				address_2=?,postal_code=?,email=?,mobile=?,
 				date_modified=NOW()
 			WHERE
 				end_customer_id=?`
