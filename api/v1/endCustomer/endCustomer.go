@@ -15,8 +15,7 @@ import (
 )
 
 func Routes() *chi.Mux {
-	// Hard coding for now. eventually will be replaced with
-	// dynamic customer specific creds. Putting the instantiation
+	// Putting the instantiation
 	// of these objects in here for now. There is probably a better
 	// way to do this but I don't know what that is at this point.
 

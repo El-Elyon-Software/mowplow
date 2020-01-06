@@ -24,6 +24,8 @@ type CRUD interface {
 }
 
 func (d *DB) NewDAL() {
+	// Hard coding for now. eventually will be replaced with
+	// dynamic customer specific creds. 
 	d.DBType = "mysql"
 	d.DBName = "mowplow"
 	d.DBUser = "mowplow"
