@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
-
 	"./endCustomer"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/render"
+	"time"
 )
 
 func Routes() *chi.Mux {
@@ -30,6 +30,8 @@ func Routes() *chi.Mux {
 }
 
 func main() {
+	time.Sleep(20)
 	router := Routes()
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
+

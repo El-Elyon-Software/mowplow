@@ -23,7 +23,7 @@ type CRUD interface {
 	DeleteFilter()
 }
 
-func (d *DB) NewDAL() {
+func (d *DB) NewDB() {
 	// Hard coding for now. eventually will be replaced with
 	// dynamic customer specific creds. 
 	d.DBType = "mysql"
@@ -35,5 +35,10 @@ func (d *DB) NewDAL() {
 func (d *DB) OpenDB() error {
 	db, err := sql.Open(d.DBType, d.DBUser+":"+d.DBPassword+"@/"+d.DBName)
 	d.DB = db
+	return err
+}
+
+func (d *DB) CloseDB() error {
+	err := d.DB.Close();
 	return err
 }

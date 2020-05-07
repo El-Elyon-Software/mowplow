@@ -14,13 +14,22 @@ import (
 	e "../errors"
 )
 
-func Routes() *chi.Mux {
-	// Putting the instantiation
-	// of these objects in here for now. There is probably a better
-	// way to do this but I don't know what that is at this point.
+//The choice has been made to make the business entities
+//contain the CRUD operations and business logic governing
+//CRUD. This can be modified later if need be.
 
-	dal := dal.NewDAL()
-	ec := EndCustomer{dal: dal}
+func Routes() *chi.Mux {
+	/* Putting the instantiation
+	 of these objects in here for now. There is probably a better
+	way to do this but I don't know what that is at this point.*/
+
+	db := dal.DB{
+		DBType: "",
+		DBName: "",
+		DBUser: "",
+		DBPassword: ""}
+	db.NewDB()
+	ec := EndCustomer{dal: db}
 
 	router := chi.NewRouter()
 	router.Post("/", ec.Create)
@@ -61,13 +70,17 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 		e.HandleError(rw, r, err)
 		return
 	}
+	defer ec.dal.CloseDB()
 
-	defer ec.dal.DB.Close()
-
-	stmt := `INSERT INTO end_customer 
-				(first_name,last_name, business_name, 
-				address_1, address_2, postal_code, 
-				email, mobile) 
+	stmt := `INSERT INTO end_customer (
+					first_name
+					,last_name
+					, business_name
+					, address_1
+					, address_2
+					, postal_code
+					, email
+					, mobile) 
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 	res, err := ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
@@ -103,7 +116,7 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 		e.HandleError(rw, r, err)
 		return
 	}
-	defer ec.dal.DB.Close()
+	defer ec.dal.CloseDB()
 
 	stmt := `SELECT 
 				end_customer_id
@@ -139,8 +152,17 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.Query())
 
-	stmt := `SELECT end_customer_id,first_name,last_name,business_name
-				,address_1,address_2,postal_code,email,mobile,date_added
+	stmt := `SELECT 
+				end_customer_id
+				,first_name
+				,last_name
+				,business_name
+				,address_1
+				,address_2
+				,postal_code
+				,email
+				,mobile
+				,date_added
 				,date_modified
 			FROM 
 				end_customer 
@@ -151,7 +173,7 @@ func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 		e.HandleError(rw, r, err)
 		return
 	}
-	defer ec.dal.DB.Close()
+	defer ec.dal.CloseDB()
 
 	rows, err := ec.dal.DB.Query(stmt, vals...)
 	if err != nil {
@@ -193,13 +215,20 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 		e.HandleError(rw, r, err)
 		return
 	}
+	defer ec.dal.CloseDB()
 
-	defer ec.dal.DB.Close()
-
-	stmt := `UPDATE end_customer SET
-				first_name=?,last_name=?,business_name=?, address_1=?, 
-				address_2=?,postal_code=?,email=?,mobile=?,
-				date_modified=NOW()
+	stmt := `UPDATE 
+				end_customer 
+			SET
+				first_name=?
+				,last_name=?
+				,business_name=?
+				,address_1=?
+				,address_2=?
+				,postal_code=?
+				,email=?
+				,mobile=?
+				,date_modified=NOW()
 			WHERE
 				end_customer_id=?`
 
@@ -227,10 +256,11 @@ func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
 		e.HandleError(rw, r, err)
 		return
 	}
+	defer ec.dal.CloseDB()
 
-	defer ec.dal.DB.Close()
-
-	stmt := `UPDATE end_customer SET
+	stmt := `UPDATE 
+				end_customer 
+			SET
 				date_deleted=NOW()
 			WHERE
 				end_customer_id=?`
