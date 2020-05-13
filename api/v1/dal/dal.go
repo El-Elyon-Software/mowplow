@@ -16,8 +16,8 @@ type DB struct {
 
 type CRUD interface {
 	Create()
-	Retrieve()
-	RetrieveFilter()
+	Read()
+	ReadFilter()
 	Update()
 	Delete()
 	DeleteFilter()

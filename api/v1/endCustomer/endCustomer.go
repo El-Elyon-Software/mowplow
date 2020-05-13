@@ -4,14 +4,12 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"strings"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/render"
-	"github.com/pkg/errors"
 
 	"../dal"
 	e "../errors"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/render"
+	"github.com/pkg/errors"
 )
 
 //The choice has been made to make the business entities
@@ -24,17 +22,17 @@ func Routes() *chi.Mux {
 	way to do this but I don't know what that is at this point.*/
 
 	db := dal.DB{
-		DBType: "",
-		DBName: "",
-		DBUser: "",
+		DBType:     "",
+		DBName:     "",
+		DBUser:     "",
 		DBPassword: ""}
 	db.NewDB()
 	ec := EndCustomer{dal: db}
 
 	router := chi.NewRouter()
 	router.Post("/", ec.Create)
-	router.Get("/{ID}", ec.Retrieve)
-	router.Get("/", ec.RetrieveFilter)
+	router.Get("/{ID}", ec.Read)
+	router.Get("/", ec.ReadFilter)
 	router.Put("/{ID}", ec.Update)
 	router.Delete("/{ID}", ec.Delete)
 	return router
@@ -81,7 +79,7 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 					, postal_code
 					, email
 					, mobile) 
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
 
 	res, err := ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
 		ec.Address1, ec.Address2, ec.PostalCode, ec.Email, ec.Mobile)
@@ -104,7 +102,7 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) Read(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -134,7 +132,7 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 				end_customer 
 			WHERE 
 				end_customer_id=?
-				AND date_delete IS NULL`
+				AND date_deleted IS NULL;`
 
 	err = ec.dal.DB.QueryRow(stmt, id).Scan(
 		&ec.ID, &ec.FirstName, &ec.LastName, &ec.BusinessName,
@@ -149,7 +147,7 @@ func (ec *EndCustomer) Retrieve(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, ec)
 }
 
-func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.Query())
 
 	stmt := `SELECT 
@@ -166,7 +164,8 @@ func (ec EndCustomer) RetrieveFilter(rw http.ResponseWriter, r *http.Request) {
 				,date_modified
 			FROM 
 				end_customer 
-			WHERE ` + strings.Join(wc, "")
+			WHERE 
+				` + wc[0] + `;`
 
 	err := ec.dal.OpenDB()
 	if err != nil {
@@ -230,7 +229,7 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 				,mobile=?
 				,date_modified=NOW()
 			WHERE
-				end_customer_id=?`
+				end_customer_id=?;`
 
 	_, err = ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
 		ec.Address1, ec.Address2, ec.PostalCode, ec.Email, ec.Mobile,
@@ -241,7 +240,7 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ec.Retrieve(rw, r)
+	ec.Read(rw, r)
 }
 
 func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
@@ -263,7 +262,7 @@ func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
 			SET
 				date_deleted=NOW()
 			WHERE
-				end_customer_id=?`
+				end_customer_id=?;`
 
 	_, err = ec.dal.DB.Exec(stmt, id)
 
