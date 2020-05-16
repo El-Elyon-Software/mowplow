@@ -1,9 +1,11 @@
 package endCustomer
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"../dal"
 	e "../errors"
@@ -35,6 +37,7 @@ func Routes() *chi.Mux {
 	router.Get("/", ec.ReadFilter)
 	router.Put("/{ID}", ec.Update)
 	router.Delete("/{ID}", ec.Delete)
+	router.Patch("/{ID}", ec.Update)
 	return router
 }
 
@@ -165,7 +168,7 @@ func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 			FROM 
 				end_customer 
 			WHERE 
-				` + wc[0] + `;`
+				` + strings.Join(wc, " ") + `;`
 
 	err := ec.dal.OpenDB()
 	if err != nil {

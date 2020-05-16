@@ -8,30 +8,36 @@ func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}
 	var wc []string
 	var vals []interface{}
 	c := 0
+	var v_op string
+	var dbf_op string
 
 	for dbField, value := range params {
-		dbf := dbField
-		v_op := "="
-		dbf_op := ""
-
-		if c > 0 {
-			dbf_op = " AND "
+		dbf_op = "AND"
+		if strings.Contains(dbField, "||") {
+			dbf_op = "OR"
+			dbField = strings.Replace(dbField, "||", "", 1)
 		}
+		
+		dbField = translateDbFieldName(dbField)
 
-		if len(strings.Split(dbf, ":")) > 1 {
-			dbf = strings.Split(dbf, ":")[1]
-			dbf_op = strings.Split(dbf, ":")[0]
-			dbf_op = translateOperator(dbf_op)
+		//Multiple query string parameters.
+		//If the dbField is not in the WHERE clause add the operator 
+		//and complete the loop, else continue to next dbField.
+		if c > 0 && !strings.Contains(strings.Join(wc, ""), dbField) {
+			wc = append(wc, dbf_op)
+		} else if c > 0 {
+			continue
 		}
 
 		v := value[0]
+
 		//There is an operator in the value 
 		if len(strings.Split(v, ":")) > 1 { 
 			v_op = strings.Split(v, ":")[0]
 			v = strings.Split(v, ":")[1]
 		
 			// There are multiple values for a single key
-			// such as for IN and BETWEEN operators
+			// think IN or BETWEEN operators
 			if len(strings.Split(v, ",")) > 1 {
 				vv := strings.Split(v, ",")
 				for i := 0; i < len(vv); i++ {
@@ -44,9 +50,7 @@ func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}
 			vals = append(vals, v)
 		}
 
-		dbf = translateDbFieldName(dbf)
-		wc = append(wc, buildWhereClause(dbf_op, dbf, v_op, vals))
-		
+		wc = append(wc, buildWhereClause(dbField, v_op, vals))
 		c++
 	}
 
@@ -74,31 +78,31 @@ func translateOperator(op string) string {
 	case "in":
 		return "IN"
 	}
-	return ""
+	return "="
 }
 
-func buildWhereClause(dbf_op string, dbf string, v_op string, vals []interface{}) string {
+func buildWhereClause(dbf string, v_op string, vals []interface{}) string {
 	v_op = translateOperator(v_op)
 	switch o := v_op; o {
 	case "BETWEEN":
-		return buildBetweenWhereClause(dbf_op, dbf, o)
+		return buildBetweenWhereClause(dbf, o)
 	case "IN":
-		return buildInWhereClause(dbf_op, dbf, o, vals)
+		return buildInWhereClause(dbf, o, vals)
 	}
-	return dbf_op + dbf + " " + v_op + " ?"
+	return dbf + " " + v_op + " ?"
 }
 
-func buildBetweenWhereClause(dbf_op string, dbf string, v_op string) string {
-	return  dbf_op + dbf + " " + v_op + " ? AND ?"
+func buildBetweenWhereClause(dbf string, v_op string) string {
+	return  dbf + " " + v_op + " ? AND ?"
 }
 
-func buildInWhereClause(dbf_op string, dbf string, v_op string, vals []interface{}) string {
+func buildInWhereClause(dbf string, v_op string, vals []interface{}) string {
 	bindvars := ""
 	for i := 0; i < len(vals); i++ {
 		bindvars += "?,"
 	}
 	bindvars = strings.TrimSuffix(bindvars, ",")
-	return dbf_op + dbf + " " + v_op + " (" + bindvars + ")"
+	return dbf + " " + v_op + " (" + bindvars + ")"
 }
 
 func translateDbFieldName(fn string) string {
@@ -120,9 +124,9 @@ func translateDbFieldName(fn string) string {
 	case "mp":
 		return "mobile"
 	case "da":
-		return "date_added"
+		return "DATE_FORMAT(date_added, '%Y-%m-%d')"
 	case "dm":
-		return "date_modified"
+		return "DATE_FORMAT(date_modified, '%Y-%m-%d')"
 	case "ct":
 		return "city"
 	case "st":
