@@ -1,12 +1,10 @@
 package endCustomer
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
-
 	"../dal"
 	e "../errors"
 	"github.com/go-chi/chi"
@@ -151,7 +149,7 @@ func (ec *EndCustomer) Read(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
-	wc, vals := dal.ParseQueryStringParams(r.URL.Query())
+	wc, vals := dal.ParseQueryStringParams(r.URL.RawQuery)
 
 	stmt := `SELECT 
 				end_customer_id
@@ -235,8 +233,7 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 				end_customer_id=?;`
 
 	_, err = ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
-		ec.Address1, ec.Address2, ec.PostalCode, ec.Email, ec.Mobile,
-		ec.ID)
+		ec.Address1, ec.Address2, ec.PostalCode, ec.Email, ec.Mobile, ec.ID)
 
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -281,10 +278,6 @@ func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, gr)
 }
 
-func (ec *EndCustomer) DeleteFilter(rw http.ResponseWriter, r *http.Request) {
-
-}
-
 func (ec *EndCustomer) bindData(rw http.ResponseWriter, r *http.Request) error {
 	if err := render.Bind(r, ec); err != nil {
 		e.HandleError(rw, r, err)
@@ -294,6 +287,8 @@ func (ec *EndCustomer) bindData(rw http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+//ec implements the Bind interface, making this the Binder method called from render.binder
+//On binding, request params are validated
 func (ec *EndCustomer) Bind(r *http.Request) error {
 	if ec.FirstName == "" || len(ec.FirstName) < 1 {
 		return errors.New("firstName is required and must be at least one characters.")

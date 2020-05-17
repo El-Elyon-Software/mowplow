@@ -2,18 +2,22 @@ package dal
 
 import (
 	"strings"
+	"net/url"
 )
 
-func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}) {
+func ParseQueryStringParams(qs string) ([]string, []interface{}) {
 	var wc []string
 	var vals []interface{}
-	c := 0
-	var v_op string
-	var dbf_op string
 
-	for dbField, value := range params {
-		dbf_op = "AND"
-		if strings.Contains(dbField, "||") {
+	c := 0
+	for _, val := range sliceAndConditionQueryString(qs) {
+		kv := strings.Split(val, "=")
+		dbField := kv[0]
+		v := kv[1]
+		v_op := ""
+		dbf_op := "AND"
+
+		if strings.Contains(dbField, "||") && c > 0 {
 			dbf_op = "OR"
 			dbField = strings.Replace(dbField, "||", "", 1)
 		}
@@ -28,8 +32,6 @@ func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}
 		} else if c > 0 {
 			continue
 		}
-
-		v := value[0]
 
 		//There is an operator in the value 
 		if len(strings.Split(v, ":")) > 1 { 
@@ -55,6 +57,18 @@ func ParseQueryStringParams(params map[string][]string) ([]string, []interface{}
 	}
 
 	return wc, vals
+}
+
+//Creates a slice from the query string and
+//unescapes any URL encoding via the net/url package
+func sliceAndConditionQueryString(qs string) []string {
+	slc := strings.Split(qs, "&")
+
+	for i, val := range slc {
+		slc[i], _ = url.QueryUnescape(val)
+	}
+
+	return slc
 }
 
 func translateOperator(op string) string {
