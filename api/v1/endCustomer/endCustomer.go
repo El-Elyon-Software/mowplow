@@ -12,32 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-//The choice has been made to make the business entities
-//contain the CRUD operations and business logic governing
-//CRUD. This can be modified later if need be.
-func Routes() *chi.Mux {
-	/* Putting the instantiation
-	 of these objects in here for now. There is probably a better
-	way to do this but I don't know what that is at this point.*/
-
-	db := dal.DB{
-		DBType:     "",
-		DBName:     "",
-		DBUser:     "",
-		DBPassword: ""}
-	db.NewDB()
-	ec := EndCustomer{dal: db}
-
-	router := chi.NewRouter()
-	router.Post("/", ec.Create)
-	router.Get("/{ID}", ec.Read)
-	router.Get("/", ec.ReadFilter)
-	router.Put("/{ID}", ec.Update)
-	router.Delete("/{ID}", ec.Delete)
-	router.Patch("/{ID}", ec.Update)
-	return router
-}
-
 type EndCustomer struct {
 	ID           int64  `json:"id"`
 	FirstName    string `json:"firstName"`
@@ -58,7 +32,29 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
+func NewEndCustomer() *chi.Mux {
+	db := dal.DB{
+		DBType:     "",
+		DBName:     "",
+		DBUser:     "",
+		DBPassword: ""}
+	db.NewDB()
+	ec := EndCustomer{dal: db}
+	return ec.routes()
+}
+
+func (ec *EndCustomer) routes() *chi.Mux {
+	router := chi.NewRouter()
+	router.Post("/", ec.create)
+	router.Get("/{ID}", ec.read)
+	router.Get("/", ec.readFilter)
+	router.Put("/{ID}", ec.update)
+	router.Delete("/{ID}", ec.delete)
+	router.Patch("/{ID}", ec.update)
+	return router
+}
+
+func (ec *EndCustomer) create(rw http.ResponseWriter, r *http.Request) {
 	if ec.bindData(rw, r) != nil {
 		return
 	}
@@ -102,7 +98,7 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func (ec *EndCustomer) Read(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) read(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -147,7 +143,7 @@ func (ec *EndCustomer) Read(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, ec)
 }
 
-func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) readFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.RawQuery)
 
 	stmt := `SELECT 
@@ -194,7 +190,7 @@ func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, ecs)
 }
 
-func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) update(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -236,10 +232,10 @@ func (ec *EndCustomer) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ec.Read(rw, r)
+	ec.read(rw, r)
 }
 
-func (ec *EndCustomer) Delete(rw http.ResponseWriter, r *http.Request) {
+func (ec *EndCustomer) delete(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)

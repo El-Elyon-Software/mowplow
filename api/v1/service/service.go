@@ -9,34 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/render"
 	"github.com/pkg/errors"
-	"fmt"
 )
-
-//The choice has been made to make the business entities
-//contain the CRUD operations and business logic governing
-//CRUD. This can be modified later if need be.
-func Routes() *chi.Mux {
-	/* Putting the instantiation
-	 of these objects in here for now. There is probably a better
-	way to do this but I don't know what that is at this point.*/
-
-	db := dal.DB{
-		DBType:     "",
-		DBName:     "",
-		DBUser:     "",
-		DBPassword: ""}
-	db.NewDB()
-	srv := Service{dal: db}
-
-	router := chi.NewRouter()
-	router.Post("/", srv.Create)
-	router.Get("/{ID}", srv.Read)
-	router.Get("/", srv.ReadFilter)
-	router.Put("/{ID}", srv.Update)
-	router.Delete("/{ID}", srv.Delete)
-	router.Patch("/{ID}", srv.Update)
-	return router
-}
 
 type Service struct {
 	ID           int64  `json:"id"`
@@ -52,7 +25,29 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func (srv *Service) Create(rw http.ResponseWriter, r *http.Request) {
+func NewService() *chi.Mux {
+	db := dal.DB{
+		DBType:     "",
+		DBName:     "",
+		DBUser:     "",
+		DBPassword: ""}
+	db.NewDB()
+	srv := Service{dal: db}
+	return srv.routes()
+}
+
+func (srv *Service) routes() *chi.Mux {
+	router := chi.NewRouter()
+	router.Post("/", srv.create)
+	router.Get("/{ID}", srv.read)
+	router.Get("/", srv.readFilter)
+	router.Put("/{ID}", srv.update)
+	router.Delete("/{ID}", srv.delete)
+	router.Patch("/{ID}", srv.update)
+	return router
+}
+
+func (srv *Service) create(rw http.ResponseWriter, r *http.Request) {
 	if srv.bindData(rw, r) != nil {
 		return
 	}
@@ -88,7 +83,7 @@ func (srv *Service) Create(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, srv)
 }
 
-func (srv *Service) Read(rw http.ResponseWriter, r *http.Request) {
+func (srv *Service) read(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -126,7 +121,7 @@ func (srv *Service) Read(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, srv)
 }
 
-func (srv *Service) ReadFilter(rw http.ResponseWriter, r *http.Request) {
+func (srv *Service) readFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.RawQuery)
 
 	stmt := `SELECT 
@@ -139,7 +134,7 @@ func (srv *Service) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 				service 
 			WHERE 
 				` + strings.Join(wc, " ") + `;`
-	fmt.Println(stmt)
+
 	err := srv.dal.OpenDB()
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -164,7 +159,7 @@ func (srv *Service) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 	render.JSON(rw, r, ecs)
 }
 
-func (srv *Service) Update(rw http.ResponseWriter, r *http.Request) {
+func (srv *Service) update(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -199,10 +194,10 @@ func (srv *Service) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	srv.Read(rw, r)
+	srv.read(rw, r)
 }
 
-func (srv *Service) Delete(rw http.ResponseWriter, r *http.Request) {
+func (srv *Service) delete(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "ID"), 10, 64)
 	if err != nil {
 		e.HandleError(rw, r, err)

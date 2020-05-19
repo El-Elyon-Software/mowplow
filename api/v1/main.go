@@ -24,8 +24,8 @@ func Routes() *chi.Mux {
 	)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Mount("/endCustomer", endCustomer.Routes())
-		r.Mount("/service", service.Routes())
+		r.Mount("/endCustomer", endCustomer.NewEndCustomer())
+		r.Mount("/service", service.NewService())
 	})
 
 	return r
@@ -36,4 +36,3 @@ func main() {
 	router := Routes()
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
-
