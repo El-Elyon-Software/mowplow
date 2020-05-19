@@ -15,7 +15,6 @@ import (
 //The choice has been made to make the business entities
 //contain the CRUD operations and business logic governing
 //CRUD. This can be modified later if need be.
-
 func Routes() *chi.Mux {
 	/* Putting the instantiation
 	 of these objects in here for now. There is probably a better
@@ -72,14 +71,14 @@ func (ec *EndCustomer) Create(rw http.ResponseWriter, r *http.Request) {
 	defer ec.dal.CloseDB()
 
 	stmt := `INSERT INTO end_customer (
-					first_name
-					,last_name
-					, business_name
-					, address_1
-					, address_2
-					, postal_code
-					, email
-					, mobile) 
+				first_name
+				,last_name
+				, business_name
+				, address_1
+				, address_2
+				, postal_code
+				, email
+				, mobile) 
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
 
 	res, err := ec.dal.DB.Exec(stmt, ec.FirstName, ec.LastName, ec.BusinessName,
@@ -184,15 +183,12 @@ func (ec *EndCustomer) ReadFilter(rw http.ResponseWriter, r *http.Request) {
 
 	var ecs []*EndCustomer
 	for rows.Next() {
-		var singel_ec EndCustomer
+		var e EndCustomer
 		rows.Scan(
-			&singel_ec.ID, &singel_ec.FirstName, &singel_ec.LastName,
-			&singel_ec.BusinessName,
-			&singel_ec.Address1, &singel_ec.Address2, &singel_ec.PostalCode,
-			&singel_ec.Email, &singel_ec.Mobile,
-			&singel_ec.DateAdded, &singel_ec.DateModified)
-
-		ecs = append(ecs, &singel_ec)
+			&e.ID, &e.FirstName, &e.LastName, &e.BusinessName,
+			&e.Address1, &e.Address2, &e.PostalCode,
+			&e.Email, &e.Mobile, &e.DateAdded, &e.DateModified)
+		ecs = append(ecs, &e)
 	}
 
 	render.JSON(rw, r, ecs)

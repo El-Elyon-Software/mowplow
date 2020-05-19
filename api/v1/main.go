@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"./endCustomer"
+	"./service"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/render"
@@ -24,6 +25,7 @@ func Routes() *chi.Mux {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/endCustomer", endCustomer.Routes())
+		r.Mount("/service", service.Routes())
 	})
 
 	return r
