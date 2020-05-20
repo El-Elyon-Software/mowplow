@@ -149,14 +149,14 @@ func (srv *Service) readFilter(rw http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var ecs []*Service
+	var srvs []*Service
 	for rows.Next() {
 		var s Service
 		rows.Scan(&s.ID, &s.ServiceName, &s.Description, &s.DateAdded, &s.DateModified)
-		ecs = append(ecs, &s)
+		srvs = append(srvs, &s)
 	}
 
-	render.JSON(rw, r, ecs)
+	render.JSON(rw, r, srvs)
 }
 
 func (srv *Service) update(rw http.ResponseWriter, r *http.Request) {
@@ -241,8 +241,6 @@ func (srv *Service) bindData(rw http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-//ec implements the Bind interface, making this the Binder method called from render.binder
-//On binding, request params are validated
 func (srv *Service) Bind(r *http.Request) error {
 	if srv.ServiceName == "" || len(srv.ServiceName) < 1 {
 		return errors.New("serviceName is required and must be at least one characters.")

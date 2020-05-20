@@ -6,6 +6,7 @@ import (
 	"./endCustomer"
 	ep "./endPoint"
 	"./service"
+	"./serviceProvider"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/render"
@@ -37,6 +38,8 @@ func buildEndPoint(ep string) ep.EndPoint {
 		return endCustomer.NewEndCustomer()
 	case "/service":
 		return service.NewService()
+	case "/serviceProvider":
+		return serviceProvider.NewServiceProvider()
 	}
 	return nil
 }
