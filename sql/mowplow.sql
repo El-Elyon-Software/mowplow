@@ -1,5 +1,3 @@
--- MySQL Workbench Forward Engineering
-
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
@@ -11,7 +9,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema mowplow
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mowplow` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+CREATE SCHEMA IF NOT EXISTS `mowplow`;
 USE `mowplow` ;
 
 -- -----------------------------------------------------
@@ -59,9 +57,6 @@ CREATE TABLE IF NOT EXISTS `mowplow`.`end_customer` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_postal_code_idx` ON `mowplow`.`end_customer` (`postal_code` ASC) VISIBLE;
-
-
 -- -----------------------------------------------------
 -- Table `mowplow`.`service_provider`
 -- -----------------------------------------------------
@@ -87,9 +82,6 @@ CREATE TABLE IF NOT EXISTS `mowplow`.`service_provider` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-CREATE INDEX `fk_service_provider_postal_code_idx` ON `mowplow`.`service_provider` (`postal_code` ASC) VISIBLE;
-
 
 -- -----------------------------------------------------
 -- Table `mowplow`.`service`
@@ -133,11 +125,6 @@ CREATE TABLE IF NOT EXISTS `mowplow`.`service_provider_service` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_service_provider_service_service_provider_id_idx` ON `mowplow`.`service_provider_service` (`service_provider_id` ASC) VISIBLE;
-
-CREATE INDEX `fk_service_provider_service_service_id_idx` ON `mowplow`.`service_provider_service` (`service_id` ASC) VISIBLE;
-
-
 -- -----------------------------------------------------
 -- Table `mowplow`.`end_customer_service`
 -- -----------------------------------------------------
@@ -166,10 +153,6 @@ CREATE TABLE IF NOT EXISTS `mowplow`.`end_customer_service` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-CREATE INDEX `fk_end_customer_service_end_customer_id_idx` ON `mowplow`.`end_customer_service` (`end_customer_id` ASC) VISIBLE;
-
-CREATE INDEX `fk_end_customer_service_provider_service_id_idx` ON `mowplow`.`end_customer_service` (`service_provider_service_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------

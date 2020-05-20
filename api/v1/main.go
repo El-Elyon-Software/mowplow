@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 	"./endCustomer"
+	ep "./endPoint"
 	"./service"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/render"
-	"time"
 )
 
 func Routes() *chi.Mux {
@@ -24,15 +24,25 @@ func Routes() *chi.Mux {
 	)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Mount("/endCustomer", endCustomer.NewEndCustomer())
-		r.Mount("/service", service.NewService())
+		r.Mount("/endCustomer", buildEndPoint("/endCustomer").Routes())
+		r.Mount("/service", buildEndPoint("/service").Routes())
 	})
 
 	return r
 }
 
+func buildEndPoint(ep string) ep.EndPoint {
+	switch s := ep; s {
+	case "/endCustomer":
+		return endCustomer.NewEndCustomer()
+	case "/service":
+		return service.NewService()
+	}
+	return nil
+}
+
 func main() {
-	time.Sleep(20)
+	// time.Sleep(20)
 	router := Routes()
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

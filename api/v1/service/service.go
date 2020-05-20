@@ -25,7 +25,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewService() *chi.Mux {
+func NewService() *Service {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",
@@ -33,10 +33,10 @@ func NewService() *chi.Mux {
 		DBPassword: ""}
 	db.NewDB()
 	srv := Service{dal: db}
-	return srv.routes()
+	return &srv
 }
 
-func (srv *Service) routes() *chi.Mux {
+func (srv *Service) Routes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Post("/", srv.create)
 	router.Get("/{ID}", srv.read)

@@ -32,7 +32,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewEndCustomer() *chi.Mux {
+func NewEndCustomer() *EndCustomer {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",
@@ -40,10 +40,10 @@ func NewEndCustomer() *chi.Mux {
 		DBPassword: ""}
 	db.NewDB()
 	ec := EndCustomer{dal: db}
-	return ec.routes()
+	return &ec
 }
 
-func (ec *EndCustomer) routes() *chi.Mux {
+func (ec *EndCustomer) Routes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Post("/", ec.create)
 	router.Get("/{ID}", ec.read)

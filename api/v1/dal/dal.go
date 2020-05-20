@@ -2,7 +2,6 @@ package dal
 
 import (
 	"database/sql"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -12,15 +11,6 @@ type DB struct {
 	DBName     string
 	DBUser     string
 	DBPassword string
-}
-
-type CRUD interface {
-	Create()
-	Read()
-	ReadFilter()
-	Update()
-	Delete()
-	DeleteFilter()
 }
 
 func (d *DB) NewDB() {
