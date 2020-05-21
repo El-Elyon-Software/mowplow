@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/render"
 	"github.com/pkg/errors"
+	"fmt"
 )
 
 type ServiceProvider struct {
@@ -66,7 +67,7 @@ func (ec *ServiceProvider) create(rw http.ResponseWriter, r *http.Request) {
 	}
 	defer ec.dal.CloseDB()
 
-	stmt := `INSERT INTO end_customer (
+	stmt := `INSERT INTO service_provider (
 				first_name
 				,last_name
 				, business_name
@@ -113,7 +114,7 @@ func (ec *ServiceProvider) read(rw http.ResponseWriter, r *http.Request) {
 	defer ec.dal.CloseDB()
 
 	stmt := `SELECT 
-				end_customer_id
+				service_provider_id
 				,first_name
 				,last_name
 				,business_name
@@ -125,9 +126,9 @@ func (ec *ServiceProvider) read(rw http.ResponseWriter, r *http.Request) {
 				,date_added
 				,date_modified
 			FROM 
-				end_customer 
+				service_provider 
 			WHERE 
-				end_customer_id=?
+				service_provider_id=?
 				AND date_deleted IS NULL;`
 
 	err = ec.dal.DB.QueryRow(stmt, id).Scan(
@@ -147,7 +148,7 @@ func (ec *ServiceProvider) readFilter(rw http.ResponseWriter, r *http.Request) {
 	wc, vals := dal.ParseQueryStringParams(r.URL.RawQuery)
 
 	stmt := `SELECT 
-				end_customer_id
+				service_provider_id
 				,first_name
 				,last_name
 				,business_name
@@ -159,10 +160,12 @@ func (ec *ServiceProvider) readFilter(rw http.ResponseWriter, r *http.Request) {
 				,date_added
 				,date_modified
 			FROM 
-				end_customer 
+				service_provider 
 			WHERE 
 				` + strings.Join(wc, " ") + `;`
-
+	fmt.Println(stmt)
+	fmt.Println(wc)
+	fmt.Println(vals)
 	err := ec.dal.OpenDB()
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -210,7 +213,7 @@ func (sp *ServiceProvider) update(rw http.ResponseWriter, r *http.Request) {
 	defer sp.dal.CloseDB()
 
 	stmt := `UPDATE 
-				end_customer 
+				service_provider 
 			SET
 				first_name=?
 				,last_name=?
@@ -285,14 +288,17 @@ func (sp *ServiceProvider) Bind(r *http.Request) error {
 	if sp.FirstName == "" || len(sp.FirstName) < 1 {
 		return errors.New("firstName is required and must be at least one characters.")
 	}
+
 	if sp.LastName == "" || len(sp.LastName) < 1 {
 		return errors.New("lastName is required and must be at least one characters.")
 	}
+
 	if sp.Address1 == "" || len(sp.Address1) < 4 {
 		return errors.New("address1 is required and must be at least four characters.")
 	}
-	if sp.PostalCode == "" || len(sp.PostalCode) < 4 {
-		return errors.New("postalCode is required and must be at least four characters.")
+
+	if sp.PostalCode == "" || len(sp.PostalCode) < 5 {
+		return errors.New("postalCode is required and must be at least five characters.")
 	}
 
 	re := regexp.MustCompile(`(?mi)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}`)

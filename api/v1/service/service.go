@@ -245,6 +245,7 @@ func (srv *Service) Bind(r *http.Request) error {
 	if srv.ServiceName == "" || len(srv.ServiceName) < 1 {
 		return errors.New("serviceName is required and must be at least one characters.")
 	}
+	
 	if srv.Description == "" || len(srv.Description) < 1 {
 		return errors.New("description is required and must be at least one characters.")
 	}

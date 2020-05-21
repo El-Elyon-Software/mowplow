@@ -291,8 +291,8 @@ func (ec *EndCustomer) Bind(r *http.Request) error {
 	if ec.Address1 == "" || len(ec.Address1) < 4 {
 		return errors.New("address1 is required and must be at least four characters.")
 	}
-	if ec.PostalCode == "" || len(ec.PostalCode) < 4 {
-		return errors.New("postalCode is required and must be at least four characters.")
+	if ec.PostalCode == "" || len(ec.PostalCode) < 5 {
+		return errors.New("postalCode is required and must be at least five characters.")
 	}
 
 	re := regexp.MustCompile(`(?mi)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}`)
