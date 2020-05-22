@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/render"
 	"github.com/pkg/errors"
-	"fmt"
 )
 
 type ServiceProvider struct {
@@ -163,9 +162,7 @@ func (ec *ServiceProvider) readFilter(rw http.ResponseWriter, r *http.Request) {
 				service_provider 
 			WHERE 
 				` + strings.Join(wc, " ") + `;`
-	fmt.Println(stmt)
-	fmt.Println(wc)
-	fmt.Println(vals)
+	
 	err := ec.dal.OpenDB()
 	if err != nil {
 		e.HandleError(rw, r, err)

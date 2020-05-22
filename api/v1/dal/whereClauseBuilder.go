@@ -102,8 +102,6 @@ func buildWhereClause(dbf string, v_op string, vals []interface{}) string {
 		return buildBetweenWhereClause(dbf, o)
 	case "IN":
 		return buildInWhereClause(dbf, o, vals)
-	case "LIKE":
-		return buildLikeWhereClause(dbf, o)
 	}
 	return dbf + " " + v_op + " ?"
 }
@@ -119,10 +117,6 @@ func buildInWhereClause(dbf string, v_op string, vals []interface{}) string {
 	}
 	bindvars = strings.TrimSuffix(bindvars, ",")
 	return dbf + " " + v_op + " (" + bindvars + ")"
-}
-
-func buildLikeWhereClause(dbf string, v_op string) string {
-	return  dbf + " " + v_op + " '%' ? '%'"
 }
 
 func translateDbFieldName(fn string) string {

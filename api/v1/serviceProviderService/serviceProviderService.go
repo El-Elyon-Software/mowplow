@@ -248,7 +248,7 @@ func (sps *ServiceProviderService) Bind(r *http.Request) error {
 	if sps.ServiceProviderID <= 0 {
 		return errors.New("serviceProviderID is required and must be at least one characters.")
 	}
-	
+
 	if sps.Description == "" || len(sps.Description) < 1 {
 		return errors.New("description is required and must be at least one characters.")
 	}
