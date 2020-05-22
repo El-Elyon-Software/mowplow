@@ -151,6 +151,10 @@ func translateDbFieldName(fn string) string {
 		return "service_name"
 	case "sd":
 		return "service.description"
+	case "spsd":
+		return "service_provider_service.description"
+	case "ecid":
+		return "end_customer_service.end_customer_id"
 	}
 	return ""
 }

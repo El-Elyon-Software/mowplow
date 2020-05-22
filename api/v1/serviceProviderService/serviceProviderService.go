@@ -26,7 +26,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewServiceProviderService() *ServiceProviderService {
+func New() *ServiceProviderService {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",
@@ -100,7 +100,8 @@ func (sps *ServiceProviderService) read(rw http.ResponseWriter, r *http.Request)
 	defer sps.dal.CloseDB()
 
 	stmt := `SELECT 
-				service_provider_id
+				service_provider_service_id
+				,service_provider_id
 				,service_id
 				,description
 				,date_added
@@ -127,7 +128,8 @@ func (sps *ServiceProviderService) readFilter(rw http.ResponseWriter, r *http.Re
 	wc, vals := dal.ParseQueryStringParams(r.URL.RawQuery)
 
 	stmt := `SELECT 
-				service_provider_id
+				service_provider_service_id
+				,service_provider_id
 				,service_id
 				,description
 				,date_added
@@ -154,7 +156,7 @@ func (sps *ServiceProviderService) readFilter(rw http.ResponseWriter, r *http.Re
 	var spss []*ServiceProviderService
 	for rows.Next() {
 		var s ServiceProviderService
-		rows.Scan(&s.ID, &s.ServiceProviderID, &s.ServiceID, &s.Description)
+		rows.Scan(&s.ID, &s.ServiceProviderID, &s.ServiceID, &s.Description, &s.DateAdded, &s.DateModified)
 		spss = append(spss, &s)
 	}
 
@@ -181,16 +183,16 @@ func (sps *ServiceProviderService) update(rw http.ResponseWriter, r *http.Reques
 	defer sps.dal.CloseDB()
 
 	stmt := `UPDATE 
-				service 
+				service_provider_service 
 			SET
 				service_provider_id=?
 				,service_id=?
 				,description=?
 				,date_modified=NOW()
 			WHERE
-				service_id=?;`
+				service_provider_service_id=?;`
 
-	_, err = sps.dal.DB.Exec(stmt, sps.ServiceProviderID, sps.ServiceProviderID, sps.Description)
+	_, err = sps.dal.DB.Exec(stmt, sps.ServiceProviderID, sps.ServiceID, sps.Description, sps.ID)
 
 	if err != nil {
 		e.HandleError(rw, r, err)
@@ -219,7 +221,7 @@ func (sps *ServiceProviderService) delete(rw http.ResponseWriter, r *http.Reques
 			SET
 				date_deleted=NOW()
 			WHERE
-				service_id=?;`
+				service_provider_service_id=?;`
 
 	_, err = sps.dal.DB.Exec(stmt, id)
 

@@ -25,7 +25,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewService() *Service {
+func New() *Service {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",
@@ -245,7 +245,7 @@ func (srv *Service) Bind(r *http.Request) error {
 	if srv.ServiceName == "" || len(srv.ServiceName) < 1 {
 		return errors.New("serviceName is required and must be at least one characters.")
 	}
-	
+
 	if srv.Description == "" || len(srv.Description) < 1 {
 		return errors.New("description is required and must be at least one characters.")
 	}

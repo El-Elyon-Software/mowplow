@@ -8,6 +8,7 @@ import (
 	"./service"
 	"./serviceProvider"
 	"./serviceProviderService"
+	"./endCustomerService"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/render"
@@ -30,6 +31,7 @@ func Routes() *chi.Mux {
 		r.Mount("/service", buildEndPoint("/service").Routes())
 		r.Mount("/serviceProvider", buildEndPoint("/serviceProvider").Routes())
 		r.Mount("/serviceProviderService", buildEndPoint("/serviceProviderService").Routes())
+		r.Mount("/endCustomerService", buildEndPoint("/endCustomerService").Routes())
 	})
 
 	return r
@@ -38,13 +40,15 @@ func Routes() *chi.Mux {
 func buildEndPoint(ep string) ep.EndPoint {
 	switch s := ep; s {
 	case "/endCustomer":
-		return endCustomer.NewEndCustomer()
+		return endCustomer.New()
 	case "/service":
-		return service.NewService()
+		return service.New()
 	case "/serviceProvider":
-		return serviceProvider.NewServiceProvider()
+		return serviceProvider.New()
 	case "/serviceProviderService":
-		return serviceProviderService.NewServiceProviderService()
+		return serviceProviderService.New()
+	case "/endCustomerService":
+		return endCustomerService.New()
 	}
 	return nil
 }

@@ -32,7 +32,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewEndCustomer() *EndCustomer {
+func New() *EndCustomer {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",

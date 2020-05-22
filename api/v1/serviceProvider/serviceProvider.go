@@ -32,7 +32,7 @@ type GeneralResponse struct {
 	ID  int64  `json:"id"`
 }
 
-func NewServiceProvider() *ServiceProvider {
+func New() *ServiceProvider {
 	db := dal.DB{
 		DBType:     "",
 		DBName:     "",
