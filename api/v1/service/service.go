@@ -43,7 +43,6 @@ func (srv *Service) Routes() *chi.Mux {
 	router.Get("/", srv.readFilter)
 	router.Put("/{ID}", srv.update)
 	router.Delete("/{ID}", srv.delete)
-	router.Patch("/{ID}", srv.update)
 	return router
 }
 

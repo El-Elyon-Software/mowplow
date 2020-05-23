@@ -50,7 +50,6 @@ func (ec *EndCustomer) Routes() *chi.Mux {
 	router.Get("/", ec.readFilter)
 	router.Put("/{ID}", ec.update)
 	router.Delete("/{ID}", ec.delete)
-	router.Patch("/{ID}", ec.update)
 	return router
 }
 

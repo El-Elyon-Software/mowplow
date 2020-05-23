@@ -44,7 +44,6 @@ func (sps *ServiceProviderService) Routes() *chi.Mux {
 	router.Get("/", sps.readFilter)
 	router.Put("/{ID}", sps.update)
 	router.Delete("/{ID}", sps.delete)
-	router.Patch("/{ID}", sps.update)
 	return router
 }
 

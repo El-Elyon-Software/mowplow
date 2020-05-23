@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS `mowplow`.`end_customer_service` (
   `contract_start_date` DATETIME NOT NULL,
   `contract_end_date` DATETIME NOT NULL,
   `date_added` DATETIME NOT NULL DEFAULT NOW(),
-  `date_modified` DATETIME NULL DEFAULT NOW(),
+  `date_modified` DATETIME NOT NULL DEFAULT NOW(),
   `date_deleted` DATETIME NULL,
   PRIMARY KEY (`end_customer_service_id`),
   CONSTRAINT `fk_end_customer_service_end_customer_id`
