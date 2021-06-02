@@ -1,10 +1,47 @@
 package dal
 
 import (
-	"strings"
 	"net/url"
+	"strings"
 )
 
+/*
+Used to build a where claused, leveraging the API's query syntax
+
+Feilds:
+fn = first_name
+ln = last_name
+bn = business_name
+a1 = address_1
+a2 = address_2
+pc = postal_code
+em = email
+mp = mobile
+da = date_added
+dm = date_mpdified
+ct = city
+st = state
+cn = country
+sn = service_name
+sd = service.description
+spsd = service_provider_service.description
+ecid = end_customer_service.end_customer_id
+
+Operators:
+= (default)
+lt = <
+gt = >
+|| = OR
+ne = <>
+lte = <=
+gte = >=
+lk = LIKE
+btw = BETWEEN
+in = IN
+
+Example:
+/api/v1/endCustomer?fn=benny&ln=pooper
+*/
 func ParseQueryStringParams(qs string) ([]string, []interface{}) {
 	var wc []string
 	var vals []interface{}
@@ -21,11 +58,11 @@ func ParseQueryStringParams(qs string) ([]string, []interface{}) {
 			dbf_op = "OR"
 			dbField = strings.Replace(dbField, "||", "", 1)
 		}
-		
+
 		dbField = translateDbFieldName(dbField)
 
 		//Multiple query string parameters.
-		//If the dbField is not in the WHERE clause add the operator 
+		//If the dbField is not in the WHERE clause add the operator
 		//and complete the loop, else continue to next dbField.
 		if c > 0 && !strings.Contains(strings.Join(wc, ""), dbField) {
 			wc = append(wc, dbf_op)
@@ -33,11 +70,11 @@ func ParseQueryStringParams(qs string) ([]string, []interface{}) {
 			continue
 		}
 
-		//There is an operator in the value 
-		if len(strings.Split(v, ":")) > 1 { 
+		//There is an operator in the value
+		if len(strings.Split(v, ":")) > 1 {
 			v_op = strings.Split(v, ":")[0]
 			v = strings.Split(v, ":")[1]
-		
+
 			// There are multiple values for a single key
 			// think IN or BETWEEN operators
 			if len(strings.Split(v, ",")) > 1 {
@@ -107,7 +144,7 @@ func buildWhereClause(dbf string, v_op string, vals []interface{}) string {
 }
 
 func buildBetweenWhereClause(dbf string, v_op string) string {
-	return  dbf + " " + v_op + " ? AND ?"
+	return dbf + " " + v_op + " ? AND ?"
 }
 
 func buildInWhereClause(dbf string, v_op string, vals []interface{}) string {

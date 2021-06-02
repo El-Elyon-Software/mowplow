@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi/render"
+	"github.com/go-chi/render"
 )
 
 type ErrResponse struct {
@@ -33,25 +33,32 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
-		// Implement real logging
-		log.Println(err)
+		LogError(err)
 
 		code := 422
 		status := "Unprocessable Entity"
 
-		if strings.Index(err.Error(), "invalid") > -1 ||
-			strings.Index(err.Error(), "unexpected") > -1 ||
-			strings.Index(err.Error(), "EOF") > -1 ||
-			strings.Index(err.Error(), "json") > -1 {
-				code = 400
-				status = "Bad Request"
+		if strings.Contains(err.Error(), "invalid") ||
+			strings.Contains(err.Error(), "unexpected") ||
+			strings.Contains(err.Error(), "EOF") ||
+			strings.Contains(err.Error(), "json") {
+			code = 400
+			status = "Bad Request"
 		}
 
-		if strings.Index(err.Error(), "Error") > -1 {
+		if strings.Contains(err.Error(), "Error") {
 			code = 500
 			status = "Internal Server Error"
 		}
 
 		render.Render(w, r, errorResponse(code, status, err))
+	}
+}
+
+func LogError(err error) {
+	if err != nil {
+		// Implement real logging
+		log.Println(err)
+		//debug.PrintStack()
 	}
 }
