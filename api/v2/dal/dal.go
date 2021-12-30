@@ -2,7 +2,7 @@ package dal
 
 import (
 	"database/sql"
-	e "mowplow/api/v1/errors"
+	e "mowplow/api/v2/errors"
 
 	_ "github.com/go-sql-driver/mysql"
 )

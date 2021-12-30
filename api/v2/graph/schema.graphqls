@@ -1,0 +1,41 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type EndCustomer {
+  id: Int
+  firstName: String!
+  lastName: String!
+  businessName: String
+  address1: String!
+  address2: String
+  postalCode: String!
+  email: String!
+  mobile: String!
+  dateAdded: String
+  dateModified: String
+}
+
+type Query {
+  getEndCustomer(id: Int!): EndCustomer!
+}
+
+input EndCustomerInput {
+  id: Int
+  firstName: String!
+  lastName: String!
+  businessName: String
+  address1: String!
+  address2: String
+  postalCode: String!
+  email: String!
+  mobile: String!
+  dateAdded: String
+  dateModified: String
+}
+
+type Mutation {
+  createEndCustomer(input: EndCustomerInput!): EndCustomer!
+  updateEndCustomer(input: EndCustomerInput!): EndCustomer!
+  deleteEndCustomer(input: ID!): String!
+}

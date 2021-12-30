@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
+	"mowplow/api/v1/controllers"
 	"net/http"
-	"mowplow/v1/controllers"
 )
 
 func main() {
